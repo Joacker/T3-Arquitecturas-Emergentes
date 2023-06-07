@@ -13,6 +13,8 @@ app = Flask(__name__)
 def create_company_route():
     company_name = request.form.get('company_name')
     company_api_key = request.form.get('company_api_key')
+    if not company_name or not company_api_key:
+        return jsonify({"error": "Invalid input data"}), 400
     response = create_company(company_name, company_api_key)
     return jsonify(response)
 
@@ -26,16 +28,26 @@ def create_location_route():
     response = create_location(company_id, location_name, location_country, location_city, location_meta)
     return jsonify(response)
 
+#La inserción de sensor_data debe tener la siguiente estructura:
+# POST /api/v1/sensor_data
+# Insertar datos ocupando el sensor_api_key como mecanismo de autorización.
+# Debe retornar Status HTTP 201 (created).
 @app.route('/sensor', methods=['POST'])
 def create_sensor_route():
     location_id = request.form.get('location_id')
-    sensor_id = request.form.get('sensor_id')
     sensor_name = request.form.get('sensor_name')
-    sensor_category = request.form.get('sensor_category')
-    sensor_meta = request.form.get('sensor_meta')
     sensor_api_key = request.form.get('sensor_api_key')
-    response = create_sensor(location_id, sensor_id, sensor_name, sensor_category, sensor_meta, sensor_api_key)
+    response = create_sensor(location_id, sensor_name, sensor_api_key)
     return jsonify(response)
+
+#La consulta de sensor_data debe tener la siguiente estructura:
+# GET /api/v1/sensor_data
+# Parámetros requeridos:
+# La autorización será posible mediante el uso de un Header HTTP o puede tener un parámetro en la URL &company_api_key= from = < marca de tiempo en formato EPOCH > to = < marca de tiempo en formato EPOCH > sensor_id = [2,3,4,5,10,220] (Arreglo de sensor_id para los cuales se consultan los sensor_data)
+@app.route('/sensor_data', methods=['GET'])
+def get_sensor_data():
+    return jsonify({})
+
 
 if __name__ == '__main__':
     create_tables()
