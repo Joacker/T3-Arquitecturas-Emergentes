@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  app:
+    container_name: AEapp
+    build: ./app
+    ports: 
+      - "5000:5000"
+    volumes:
+      - ./app:/app
+      - ./db/:/app/db/
