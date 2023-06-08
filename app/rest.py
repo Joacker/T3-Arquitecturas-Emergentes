@@ -18,23 +18,7 @@ from __init__db__ import create_tables
 
 @app.route('/',methods=['GET'])
 def index():
-    con = connection()
-    c = con.cursor()
-    c.execute("Create table if not exists Admin (ID INTEGER PRIMARY KEY AUTOINCREMENT, Username TEXT, Password TEXT)")
-    con.commit()
-    c.execute("Insert into Admin (Username,Password) values ('admin','admin')")
-    con.commit()
-    c.execute("SELECT * FROM Admin")
-    rows = c.fetchall()
-    con.close()
-    get_Admin = {}
-    Admins = []
-    for i in rows:
-        get_Admin["ID"] = i["ID"] + 1
-        get_Admin["Username"] = i["Username"]
-        get_Admin["Password"] = i["Password"]
-        Admins.append(get_Admin)
-    return jsonify(Admins)
+    return jsonify({"message":"Welcome to the API"})
 
 #GET ADMINS
 @app.route('/admin',methods=['GET'])
