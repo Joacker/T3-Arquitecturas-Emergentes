@@ -5,13 +5,12 @@ from flask import jsonify, request,abort,make_response
 from datetime import datetime
 import jwt
 from functools import wraps
-from auth import token_required,api_company_req,api_sensor_req
-# from Connect import connection
+from Connect import connection
+
+# from auth import token_required,api_company_req,api_sensor_req
 # import Locations
 # import Sensors
 # import Sensors_data
-
-
 
 #API's
 
@@ -77,6 +76,7 @@ from auth import token_required,api_company_req,api_sensor_req
 
 @app.route('/',methods=['GET'])
 def index():
+    con = connection()
     return jsonify({'message': 'Welcome to the API'})
 
 
