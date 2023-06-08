@@ -6,6 +6,7 @@ from datetime import datetime
 import jwt
 from functools import wraps
 from Connect import connection
+import json
 
 # from auth import token_required,api_company_req,api_sensor_req
 # import Locations
@@ -77,7 +78,27 @@ from Connect import connection
 @app.route('/',methods=['GET'])
 def index():
     con = connection()
-    return jsonify({'message': 'Welcome to the API'})
+    c = con.cursor()
+    c.execute("Create table if not exists Admin (ID INTEGER PRIMARY KEY AUTOINCREMENT, Username TEXT, Password TEXT)")
+    c.execute("Create table if not exists Company (ID INTEGER PRIMARY KEY AUTOINCREMENT, company_name TEXT, company_api_key TEXT)")
+    c.execute("Create table if not exists Locations (ID INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, location_name TEXT, location_api_key TEXT)")
+    c.execute("Create table if not exists Sensors (ID INTEGER PRIMARY KEY AUTOINCREMENT, location_id INTEGER, sensor_name TEXT, sensor_api_key TEXT)")
+    c.execute("Create table if not exists Sensors_data (ID INTEGER PRIMARY KEY AUTOINCREMENT, sensor_id INTEGER, sensor_data TEXT, sensor_date TEXT)")
+    con.commit()
+    c.execute("Insert into Admin (Username,Password) values ('admin','admin')")
+    con.commit()
+    c.execute("SELECT * FROM Admin")
+    rows = c.fetchall()
+    con.close()
+    get_Admin = {}
+    Admins = []
+    for i in rows:
+        get_Admin["ID"] = i["ID"]
+        get_Admin["Username"] = i["Username"]
+        get_Admin["Password"] = i["Password"]
+        Admins.append(get_Admin)
+    return jsonify(Admins)
+    
 
 
 
