@@ -4,5 +4,5 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY']='Th1s1ss3cr3t'
+app.config['SECRET_KEY']='un_secreto_ssshhhhhh'
 CORS(app)
