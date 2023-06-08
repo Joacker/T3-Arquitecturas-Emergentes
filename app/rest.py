@@ -44,9 +44,9 @@ def get_admin():
     c.execute("SELECT * FROM Admin")
     rows = c.fetchall()
     con.close()
-    get_Admin = {}
     Admins = []
     for i in rows:
+        get_Admin = {}
         get_Admin["USERNAME"] = i["USERNAME"]
         get_Admin["PASSWORD"] = i["PASSWORD"]
         Admins.append(get_Admin)
@@ -60,6 +60,17 @@ def register_admin():
     data = request.get_json()
     username = data['username']
     password = data['password']
+    
+    if not username:
+        return jsonify({"message":"Username is required"}),400
+    
+    if not password:
+        return jsonify({"message":"Password is required"}),400
+    
+    # validate if exist the admin
+    if c.execute("SELECT * FROM Admin WHERE Username = ?",(username,)).fetchone() is not None:
+        return jsonify({"message":"Admin already exist"}),400
+    
     c.execute("INSERT INTO Admin (Username,Password) VALUES (?,?)",(username,password))
     con.commit()
     con.close()
