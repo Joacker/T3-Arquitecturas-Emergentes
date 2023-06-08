@@ -1,7 +1,7 @@
 from crypt import methods
 import sqlite3
 
-# Conecion de la Base de Datos
+# Conexión de la Base de Datos
 
 def connection():
     conn = sqlite3.connect('./db/AEdb.db')
