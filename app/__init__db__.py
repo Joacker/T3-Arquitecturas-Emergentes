@@ -65,3 +65,4 @@ def create_tables():
     )
     
     con.commit()
+    con.close()

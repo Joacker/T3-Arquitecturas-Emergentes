@@ -36,7 +36,34 @@ def index():
         Admins.append(get_Admin)
     return jsonify(Admins)
 
+#GET ADMINS
+@app.route('/admin',methods=['GET'])
+def get_admin():
+    con = connection()
+    c = con.cursor()
+    c.execute("SELECT * FROM Admin")
+    rows = c.fetchall()
+    con.close()
+    get_Admin = {}
+    Admins = []
+    for i in rows:
+        get_Admin["USERNAME"] = i["USERNAME"]
+        get_Admin["PASSWORD"] = i["PASSWORD"]
+        Admins.append(get_Admin)
+    return jsonify(Admins)
 
+#REGISTER ADMIN
+@app.route('/admin',methods=['POST'])
+def register_admin():
+    con = connection()
+    c = con.cursor()
+    data = request.get_json()
+    username = data['username']
+    password = data['password']
+    c.execute("INSERT INTO Admin (Username,Password) VALUES (?,?)",(username,password))
+    con.commit()
+    con.close()
+    return jsonify({"message":"Admin created"})
 
 if __name__ == "__main__":
     create_tables()
