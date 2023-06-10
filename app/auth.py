@@ -2,12 +2,14 @@ import os, jwt, bcrypt, datetime
 import logging, json
 from flask import Flask, Blueprint, request, jsonify, g, session
 from functools import wraps
+from app import app
 from Connect import connection
 from werkzeug.exceptions import Unauthorized
 from werkzeug.security import generate_password_hash, check_password_hash
 import bcrypt
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
+app.secret_key = "un_secreto"
 
 def get_user_id():
     token = request.headers.get('X-Auth-Token')
@@ -91,6 +93,7 @@ def login():
     if not check_password_hash(admin["Password"],password):
         return jsonify({"message":"Password is incorrect"}),400
     
-    token = jwt.encode({"id":admin["username"],"exp":datetime.datetime.utcnow()+datetime.timedelta(minutes=30)},os.environ['SECRET_KEY'],algorithm="HS256")
+    token = jwt.encode({"id":admin["username"],"exp":datetime.datetime.utcnow()+datetime.timedelta(minutes=30)}, app.secret_key,algorithm="HS256")
+    
     con.close()
     return jsonify({"token":token})
