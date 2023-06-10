@@ -5,3 +5,4 @@ PyMySQL==0.10.0
 uuid
 PyJWT
 bcrypt==3.2.2
+Flask-JWT-Extended==3.24.1

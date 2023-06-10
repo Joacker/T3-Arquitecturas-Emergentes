@@ -11,23 +11,6 @@ import bcrypt
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 app.secret_key = "un_secreto"
 
-def get_user_id():
-    token = request.headers.get('X-Auth-Token')
-    if not token:
-        logging.info("Missing authorized header")
-        raise Unauthorized('Missing  authorized header')
-    try:
-        payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=["HS256"])
-        
-    except jwt.exceptions.DecodeError:
-        raise Unauthorized('Invalid authorization token from user')
-
-def monitoring(response):
-    fecha = datetime.datetime.utcnow()
-    try:
-        usuario_id = get_user_id()
-    except Unauthorized:
-        usuario_id = -1
 
 #GET ADMINS
 @app.route('/admin',methods=['GET'])
@@ -93,7 +76,10 @@ def login():
     if not check_password_hash(admin["Password"],password):
         return jsonify({"message":"Password is incorrect"}),400
     
-    token = jwt.encode({"id":admin["username"],"exp":datetime.datetime.utcnow()+datetime.timedelta(minutes=30)}, app.secret_key,algorithm="HS256")
+    token = jwt.encode({
+            "id":admin["username"],
+            "exp":datetime.datetime.utcnow()+datetime.timedelta(minutes=30)
+        }, app.secret_key ,algorithm="HS256")
     #print(app.secret_key)
     con.close()
     return jsonify({"token":token})
