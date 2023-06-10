@@ -4,3 +4,4 @@ Flask-MySQL==1.5.1
 PyMySQL==0.10.0
 uuid
 PyJWT
+bcrypt==3.2.2
