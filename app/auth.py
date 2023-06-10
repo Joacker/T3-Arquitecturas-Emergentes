@@ -94,6 +94,6 @@ def login():
         return jsonify({"message":"Password is incorrect"}),400
     
     token = jwt.encode({"id":admin["username"],"exp":datetime.datetime.utcnow()+datetime.timedelta(minutes=30)}, app.secret_key,algorithm="HS256")
-    
+    #print(app.secret_key)
     con.close()
     return jsonify({"token":token})
