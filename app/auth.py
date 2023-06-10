@@ -17,7 +17,7 @@ app.secret_key = "un_secreto"
 jwt = JWTManager(app)
 
 #GET ADMINS
-@app.route('/admin',methods=['GET'])
+@app.route('/get_admin',methods=['GET'])
 def get_admin():
     con = connection()
     c = con.cursor()
@@ -33,7 +33,7 @@ def get_admin():
     return jsonify(Admins)
 
 #REGISTER ADMIN
-@app.route('/admin',methods=['POST'])
+@app.route('/register',methods=['POST'])
 def register_admin():
     con = connection()
     c = con.cursor()
@@ -55,7 +55,8 @@ def register_admin():
     c.execute("INSERT INTO Admin (Username,Password) VALUES (?,?)",(username,password))
     con.commit()
     con.close()
-    return jsonify({"message":"Admin created"})
+    access_token = create_access_token(identity=username)
+    return jsonify({"access_token":access_token,"message":"Admin created"},200)
 
 
 #LOGIN ADMIN
