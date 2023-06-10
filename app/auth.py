@@ -7,10 +7,14 @@ from Connect import connection
 from werkzeug.exceptions import Unauthorized
 from werkzeug.security import generate_password_hash, check_password_hash
 import bcrypt
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 app.secret_key = "un_secreto"
-
+jwt = JWTManager(app)
 
 #GET ADMINS
 @app.route('/admin',methods=['GET'])
