@@ -87,12 +87,22 @@ def get_company():
     Company = [{"ID": i["ID"], "Company_Name": i["Company_Name"], "Company_API_Key": i["Company_API_Key"]} for i in rows]
     return jsonify(Company)
 
+#All API methods require the company_api_key in the route
+
 # GET LOCATIONS
-@app.route('/locations',methods=['GET'])
+@app.route('/api/<string:company_api_key>/locations',methods=['GET'])
 def get_locations():
     try:
         with connection() as con:
             c = con.cursor()
+
+            # Get the value of company_api_key from the URL
+            company_api_key = request.view_args['company_api_key']
+    
+             # Validate if the company exist
+            if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+                return jsonify({"message":"Company does not exist"}),400
+            
             c.execute("SELECT * FROM Location")
             rows = c.fetchall()
     except Exception as e:
@@ -112,15 +122,26 @@ def get_locations():
 
 
 # GET LOCATION BY ID
-@app.route('/locations/<int:id>',methods=['GET'])
+@app.route('/api/<string:company_api_key>/locations/<int:id>',methods=['GET'])
 def get_location(id):
     con = connection()
     c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     c.execute("SELECT * FROM Location WHERE ID = ?",(id,))
     row = c.fetchone()
     con.close()
+    
+    # Validate if the location exist
     if row is None:
         return jsonify({"message":"Location does not exist"}),400
+    
     get_Location = {}
     get_Location["company_id"] = row["company_id"]
     get_Location["location_name"] = row["location_name"]
@@ -131,10 +152,18 @@ def get_location(id):
 
 
 # REGISTER LOCATION
-@app.route('/locations',methods=['POST'])
+@app.route('/api/<string:company_api_key>/locations',methods=['POST'])
 def register_location():
     con = connection()
     c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     data = request.get_json()
     companyid = data['company_id']
     name = data['location_name']
@@ -173,10 +202,18 @@ def register_location():
 
 
 # UPDATE LOCATION
-@app.route('/locations/<int:id>',methods=['PUT'])
+@app.route('/api/<string:company_api_key>/locations/<int:id>',methods=['PUT'])
 def update_location(id):
     con = connection()
     c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     data = request.get_json()
     companyid = data['company_id']
     name = data['location_name']
@@ -214,25 +251,41 @@ def update_location(id):
 
 
 # DELETE LOCATION
-@app.route('/locations/<int:id>',methods=['DELETE'])
-def delete_location(id):    
+@app.route('/api/<string:company_api_key>/locations/<int:id>',methods=['DELETE'])
+def delete_location(id):
     con = connection()
     c = con.cursor()
-    c.execute("SELECT * FROM Location WHERE ID = ?",(id,))
-    row = c.fetchone()
-    if row is None:
-        return jsonify({"message":"Location not found"}),404
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+    
+    # validate if exist the location
+    if c.execute("SELECT * FROM Location WHERE ID = ?",(id,)).fetchone() is None:
+        return jsonify({"message":"Location does not exist"}),400
+    
     c.execute("DELETE FROM Location WHERE ID = ?",(id,))
     con.commit()
     con.close()
     return jsonify({"message":"Location deleted"})
 
 # GET SENSORS
-@app.route('/sensors',methods=['GET'])
+@app.route('/api/<string:company_api_key>/sensors',methods=['GET'])
 def get_sensors():
     try:
         with connection() as con:
             c = con.cursor()
+
+            # Get the value of company_api_key from the URL
+            company_api_key = request.view_args['company_api_key']
+
+            # Validate if the company exist
+            if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+                return jsonify({"message":"Company does not exist"}),400
+
             c.execute("SELECT * FROM Sensor")
             rows = c.fetchall()
     except Exception as e:
@@ -251,10 +304,18 @@ def get_sensors():
     return jsonify(Sensors)
 
 # GET SENSOR BY ID
-@app.route('/sensors/<int:id>',methods=['GET'])
+@app.route('/api/<string:company_api_key>/sensors/<int:id>',methods=['GET'])
 def get_sensor(id):
     con = connection()
     c = con.cursor()
+
+     # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     c.execute("SELECT * FROM Sensor WHERE ID = ?",(id,))
     row = c.fetchone()
     con.close()
@@ -269,10 +330,18 @@ def get_sensor(id):
     return jsonify(get_Sensor)
 
 # REGISTER SENSOR
-@app.route('/sensors',methods=['POST'])
+@app.route('/api/<string:company_api_key>/sensors',methods=['POST'])
 def register_sensor():
     con = connection()
     c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     data = request.get_json()
     locationid = data['location_id']
     name = data['sensor_name']
@@ -309,10 +378,18 @@ def register_sensor():
     return jsonify({"message":"Sensor created"})
 
 # UPDATE SENSOR
-@app.route('/sensors/<int:id>',methods=['PUT'])
+@app.route('/api/<string:company_api_key>/sensors/<int:id>',methods=['PUT'])
 def update_sensor(id):
     con = connection()
     c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     data = request.get_json()
     locationid = data['location_id']
     name = data['sensor_name']
@@ -349,10 +426,18 @@ def update_sensor(id):
     return jsonify({"message":"Sensor updated"})
 
 # DELETE SENSOR
-@app.route('/sensors/<int:id>',methods=['DELETE'])
+@app.route('/api/<string:company_api_key>/sensors/<int:id>',methods=['DELETE'])
 def delete_sensor(id):
     con = connection()
     c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
     c.execute("SELECT * FROM Sensor WHERE ID = ?",(id,))
     row = c.fetchone()
     if row is None:
@@ -361,6 +446,106 @@ def delete_sensor(id):
     con.commit()
     con.close()
     return jsonify({"message":"Sensor deleted"})
+
+#All API methods require the sensor_api_key in the route
+
+# REGISTER SENSOR DATA
+@app.route('/api/<string:sensor_api_key>/sensor_data',methods=['POST'])
+def register_sensor_data(sensor_api_key):
+    con = connection()
+    c = con.cursor()
+
+    # Get the value of sensor_api_key from the URL
+    sensor_api_key = request.view_args['sensor_api_key']
+
+    # Validate if the sensor exist
+    if c.execute("SELECT * FROM Sensor WHERE sensor_api_key = ?",(sensor_api_key,)).fetchone() is None:
+        return jsonify({"message":"Sensor does not exist"}),400
+
+    data = request.get_json()
+    sensor_id = data['sensor_id']
+    time = data['data']['time']
+    temperature = data['data']['temperature']
+    humidity = data['data']['humidity']
+    distance = data['data']['distance']
+    pressure = data['data']['pressure']
+    light_level = data['data']['light_level']
+
+    if not sensor_id:
+        return jsonify({"message":"Sensor ID is required"}),400
+    
+    if not time:
+        return jsonify({"message":"Time is required"}),400
+    
+    if not temperature:
+        return jsonify({"message":"Temperature is required"}),400
+    
+    if not humidity:
+        return jsonify({"message":"Humidity is required"}),400
+    
+    if not distance:
+        return jsonify({"message":"Distance is required"}),400
+    
+    if not pressure:
+        return jsonify({"message":"Pressure is required"}),400
+    
+    if not light_level:
+        return jsonify({"message":"Light Level is required"}),400
+
+    # validate if exist the sensor does not exist
+    if c.execute("SELECT * FROM Sensor WHERE ID = ?",(sensor_id,)).fetchone() is None:
+        return jsonify({"message":"Sensor does not exist"}),400
+
+    c.execute("INSERT INTO Sensor_Data (sensor_id,time,temperature,humidity,distance,pressure,light_level) VALUES (?,?,?,?,?,?,?)",(sensor_id,time,temperature,humidity,distance,pressure,light_level))
+    con.commit()
+    con.close()
+    return jsonify({"message":"Sensor data registered"}),201
+
+# GET SENSOR DATA
+# Required parameters:
+# The authorization will be possible through the use of a Header HTTP or can have a parameter in the URL &company_api_key= from = < timestamp in EPOCH format > to = < timestamp in EPOCH format > sensor_id = [2,3,4,5,10,220] (Array of sensor_id for the which sensor_data are consulted)
+
+@app.route('/api/<string:company_api_key>/sensor_data',methods=['GET'])
+def get_sensor_data():
+    con = connection()
+    c = con.cursor()
+
+    # Get the value of company_api_key from the URL
+    company_api_key = request.view_args['company_api_key']
+
+    # Validate if the company exist
+    if c.execute("SELECT * FROM Company WHERE Company_API_Key = ?",(company_api_key,)).fetchone() is None:
+        return jsonify({"message":"Company does not exist"}),400
+
+    # Get the value of from from the URL
+    from_date = request.args.get('from')
+
+    # Get the value of to from the URL
+    to_date = request.args.get('to')
+
+    # Get the value of sensor_id from the URL
+    sensor_id = request.args.get('sensor_id')
+
+    if not from_date:
+        return jsonify({"message":"From date is required"}),400
+    
+    if not to_date:
+        return jsonify({"message":"To date is required"}),400
+    
+    if not sensor_id:
+        return jsonify({"message":"Sensor ID is required"}),400
+
+    # validate if exist the sensor
+    if c.execute("SELECT * FROM Sensor WHERE ID = ?",(sensor_id,)).fetchone() is None:
+        return jsonify({"message":"Sensor does not exist"}),400
+
+    c.execute("SELECT * FROM Sensor_Data WHERE sensor_id = ? AND time BETWEEN ? AND ?",(sensor_id,from_date,to_date))
+    rows = c.fetchall()
+    if rows is None:
+        return jsonify({"message":"Sensor data not found"}),404
+    con.close()
+    return jsonify(rows)
+
 
 if __name__ == "__main__":
     create_tables()

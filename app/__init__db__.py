@@ -49,7 +49,6 @@ def create_tables():
 
         CREATE TABLE IF NOT EXISTS SENSOR_DATA(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            SENSOR_API_KEY TEXT,
             TIME INTEGER,
             HUMIDITY REAL,
             TEMPERATURE REAL,
