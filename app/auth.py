@@ -47,13 +47,16 @@ def register_admin():
     # validate if admin exists
     if c.execute("SELECT * FROM Admin WHERE Username = ?", (username,)).fetchone() is not None:
         return jsonify({"message": "Admin already exists"}), 400
-
+    
+    password = generate_password_hash(password = password, method = 'sha256')
+    
     c.execute("INSERT INTO Admin (Username, Password) VALUES (?, ?)", (username, password))
     con.commit()
     con.close()
 
     # Generate the access token using the username as a string
-    access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(days=1))
+    # expire in 15 minutes
+    access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=15))
 
     return jsonify({"username": username, "access_token": access_token}), 200
 
@@ -86,7 +89,7 @@ def login():
     if admin is None:
         return jsonify({"message":"Admin not exist"}),400
     
-    if not bcrypt.checkpw(password.encode('utf-8'),admin["Password"]):
+    if not check_password_hash(admin["Password"],password):
         return jsonify({"message":"Password is incorrect"}),400
     
     access_token = create_access_token(identity={"username":username})
