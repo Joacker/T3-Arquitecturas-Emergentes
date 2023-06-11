@@ -1,5 +1,5 @@
 import os, jwt, bcrypt, datetime, logging, json
-from flask import Flask, Blueprint, request, jsonify, g, session
+from flask import Flask, Blueprint, request, jsonify, g, session, make_response
 from functools import wraps
 from app import app
 from Connect import connection
@@ -9,27 +9,38 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
+#from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 
 app.secret_key = "un_secreto"
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
 jwt1 = JWTManager(app)
 
 # make decorator
-def token_required_company(f):
+def token_required(f):
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorator(*args, **kwargs):
         token = None
-        if 'x-access-token-company' in request.headers:
-            token = request.headers['x-access-token-company']
+        current_user = {}
+        if 'x-access-tokens' in request.headers:
+            token = request.headers['x-access-tokens']
         if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
+            return jsonify({'message': 'a valid token is missing'})
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_company = data['username']
+            data = jwt.decode(token, "un_secreto", verify=True, algorithms=['HS256'])
+            user_t=data['user']
+            sql = f"SELECT * FROM Admin WHERE Username='{user_t}'"
+            conn = connection()
+            rv = conn.execute(sql)
+            rows = rv.fetchall()
+            conn.close()
+            for i in rows:
+                current_user['username'] = i["Username"]
         except:
-            return jsonify({'message': 'Token is invalid!'}), 401
-        return f(current_company, *args, **kwargs)
-    return decorated
+            return jsonify({'message': 'token is invalid'})
+        return f(current_user, *args, **kwargs)
+        
+    return decorator
+
 
 #GET ADMINS
 @app.route('/get_admin', methods=['GET'])
@@ -65,7 +76,7 @@ def register_admin():
     if c.execute("SELECT * FROM Admin WHERE Username = ?", (username,)).fetchone() is not None:
         return jsonify({"message": "Admin already exists"}), 400
     
-    password = generate_password_hash(password = password, method = 'sha256')
+    #password = generate_password_hash(password = password, method = 'sha256')
     
     c.execute("INSERT INTO Admin (Username, Password) VALUES (?, ?)", (username, password))
     con.commit()
@@ -95,34 +106,29 @@ def protected():
 
 @app.route("/login_company", methods=["POST"])
 def login_company():
-    con = connection()
-    c = con.cursor()
-    data = request.get_json()
-    username = data['username']
-    password = data['password']
-    if not username:
-        return jsonify({"message":"Username is required"}),400
+    # auth from the body of the request
+    auth = request.authorization
+    if not auth or not auth.username or not auth.password:
+        return make_response('could not verify',  401, {'WWW.Authentication': 'Basic realm: "login required"'})
     
-    if not password:
-        return jsonify({"message":"Password is required"}),400
+    sql = "SELECT * FROM Admin"
+    conn = connection()
+    rv = conn.execute(sql)
+    rows = rv.fetchall()
+    conn.close()
+    for i in rows:
+        user  = i  
+    if user["Password"] == auth.password:  
+        token = jwt.encode({'user': user["Username"]}, "un_secreto", algorithm='HS256')  
+        return jsonify({'token' : token}) 
     
-    # validate if exist the company
-    company = c.execute("SELECT * FROM Admin WHERE Username = ?",(username,)).fetchone()
-    if company is None:
-        return jsonify({"message":"Company not exist"}),400
-    
-    if not check_password_hash(company["Password"],password):
-        return jsonify({"message":"Password is incorrect"}),400
-    
-    access_token = jwt.encode({"username":username}, app.config["SECRET_KEY"])
-    #print(app.secret_key)
-    con.close()
-    return jsonify({"token":access_token,"message":"Login successfull"})
+    return make_response('could not verify',  401, {'WWW.Authentication': 'Basic realm: "login required"'})
+
 
 @app.route("/protected2", methods=["GET"])
-@token_required_company
-def protected2(current_company):
-    return jsonify(logged_in_as=current_company), 200
+@token_required
+def protected2(current_user):
+    return jsonify({"message":f"Hello {current_user['username']}"})
 
 #LOGIN ADMIN
 @app.route('/login',methods=['POST'])
@@ -143,7 +149,10 @@ def login():
     if admin is None:
         return jsonify({"message":"Admin not exist"}),400
     
-    if not check_password_hash(admin["Password"],password):
+    # if not check_password_hash(admin["Password"], password):
+    #     return jsonify({"message":"Password is incorrect"}),400
+    
+    if not admin["Password"] == password:
         return jsonify({"message":"Password is incorrect"}),400
     
     access_token = create_access_token(identity={"username":username}, expires_delta=datetime.timedelta(minutes=15))
