@@ -9,38 +9,10 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
-#from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
-
+from decorators import token_required, api_company_req, api_sensor_req
 app.secret_key = "un_secreto"
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
 jwt1 = JWTManager(app)
-
-# make decorator
-def token_required(f):
-    @wraps(f)
-    def decorator(*args, **kwargs):
-        token = None
-        current_user = {}
-        if 'x-access-tokens' in request.headers:
-            token = request.headers['x-access-tokens']
-        if not token:
-            return jsonify({'message': 'a valid token is missing'})
-        try:
-            data = jwt.decode(token, "un_secreto", verify=True, algorithms=['HS256'])
-            user_t=data['user']
-            sql = f"SELECT * FROM Admin WHERE Username='{user_t}'"
-            conn = connection()
-            rv = conn.execute(sql)
-            rows = rv.fetchall()
-            conn.close()
-            for i in rows:
-                current_user['username'] = i["Username"]
-        except:
-            return jsonify({'message': 'token is invalid'})
-        return f(current_user, *args, **kwargs)
-        
-    return decorator
-
 
 #GET ADMINS
 @app.route('/get_admin', methods=['GET'])
@@ -102,33 +74,6 @@ def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200    
-
-
-@app.route("/login_company", methods=["POST"])
-def login_company():
-    # auth from the body of the request
-    auth = request.authorization
-    if not auth or not auth.username or not auth.password:
-        return make_response('could not verify',  401, {'WWW.Authentication': 'Basic realm: "login required"'})
-    
-    sql = "SELECT * FROM Admin"
-    conn = connection()
-    rv = conn.execute(sql)
-    rows = rv.fetchall()
-    conn.close()
-    for i in rows:
-        user  = i  
-    if user["Password"] == auth.password:  
-        token = jwt.encode({'user': user["Username"]}, "un_secreto", algorithm='HS256')  
-        return jsonify({'token' : token}) 
-    
-    return make_response('could not verify',  401, {'WWW.Authentication': 'Basic realm: "login required"'})
-
-
-@app.route("/protected2", methods=["GET"])
-@token_required
-def protected2(current_user):
-    return jsonify({"message":f"Hello {current_user['username']}"})
 
 #LOGIN ADMIN
 @app.route('/login',methods=['POST'])
