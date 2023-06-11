@@ -56,7 +56,7 @@ def register_admin():
 
     # Generate the access token using the username as a string
     # expire in 15 minutes
-    access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=15))
+    access_token = create_access_token(identity={"username":username}, expires_delta=datetime.timedelta(minutes=15))
 
     return jsonify({"username": username, "access_token": access_token}), 200
 
@@ -92,7 +92,7 @@ def login():
     if not check_password_hash(admin["Password"],password):
         return jsonify({"message":"Password is incorrect"}),400
     
-    access_token = create_access_token(identity={"username":username})
+    access_token = create_access_token(identity={"username":username}, expires_delta=datetime.timedelta(minutes=15))
     #print(app.secret_key)
     con.close()
     return jsonify({"token":access_token,"message":"Login successfull"})
