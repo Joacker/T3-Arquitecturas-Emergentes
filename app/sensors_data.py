@@ -37,7 +37,7 @@ def send_data(current_sensor_api_key,current_sensor_id,current_user):
             conn.execute("INSERT INTO Sensor_data (sensor_id, time, humidity, temperature, distance, pressure, light_level) VALUES (?,?,?,?,?,?,?)",(sensor_id,time_epoch,humidity,temperature,distance,presure,light_level))
             conn.commit()
             conn.close()
-            resp = jsonify('Insert Sucefully')
+            resp = jsonify('Insert Sucefully',time_epoch)
             resp.status_code = 201  
             return resp
         except:

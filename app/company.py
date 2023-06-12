@@ -5,6 +5,7 @@ from functools import wraps
 from app import app
 from Connect import connection
 from flask_cors import CORS, cross_origin
+from uuid import uuid4
 # make route to insert in company table with protected route in token_required
 CORS(app)
 
@@ -13,9 +14,9 @@ CORS(app)
 def insert_company(current_user):
     company_name = request.json['company_name']
     # insert data in the company table
-    token = request.headers.get('x-access-tokens')
+    # token = request.headers.get('x-access-tokens')
     # hay que usar el token del usuario para api_key
-    company_api_key = token
+    company_api_key = str(uuid4())
     
     conn = connection()
     
