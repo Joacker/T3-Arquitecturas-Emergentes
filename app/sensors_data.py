@@ -11,7 +11,7 @@ from datetime import datetime
 CORS(app)
 
 #REGISTER SENSOR DATA#
-@app.route('/v1/sensor_data',methods=['POST'])
+@app.route('/api/v1/sensor_data/send',methods=['POST'])
 @token_required
 @api_sensor_req
 def send_data(current_sensor_api_key,current_sensor_id,current_user):
@@ -51,12 +51,15 @@ def send_data(current_sensor_api_key,current_sensor_id,current_user):
 
 
 # DELETE SENSOR DATA FOR ID
-@app.route('/v1/sensor_data_delete',methods=['DELETE'])
+@app.route('/api/v1/sensor_data_delete/',methods=['DELETE'])
 @token_required
 def delete_data(current_user):
-    id = request.args.get('id')
+    id = request.args.get('sensor_id')
+    company_id = request.args.get('company_id')
+    from_date = request.args.get('from')
+    to_date = request.args.get('to')
     try:
-        sql = f"DELETE FROM Sensor_data WHERE sensor_id={id}"
+        sql = f"DELETE FROM Sensor_data WHERE sensor_id={id} and time BETWEEN {from_date} AND {to_date}"
         conn = connection()
         conn.execute(sql)
         conn.commit()
@@ -66,7 +69,7 @@ def delete_data(current_user):
         return make_response('sensors not exist or id is invalid',500,)
 
 #GET SENSOR DATA
-@app.route('/v1/sensor_data',methods=['GET'])
+@app.route('/api/v1/sensor_data',methods=['GET'])
 @token_required
 @api_company_req
 def get_data(current_company_api_key,current_company_id,current_user,):
