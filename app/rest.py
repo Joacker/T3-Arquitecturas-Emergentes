@@ -12,8 +12,9 @@ import company, location, sensor, sensors_data
 # import Locations
 # import Sensors
 # import Sensors_data
-
+from CORS import crossdomain
 #API's
+CORS(app)
 @app.route('/',methods=['GET'])
 def index():
     return jsonify({"message":"Welcome to the API"})
