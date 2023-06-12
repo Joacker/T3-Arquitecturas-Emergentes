@@ -10,7 +10,7 @@ from uuid import uuid4
 CORS(app)
 
 # GET SENSORS
-@app.route('/v1/get_sensors',methods=['GET'])
+@app.route('/api/v1/sensor/id',methods=['GET'])
 @token_required
 @api_company_req
 def get_sensors(current_company_api_key,current_company_id,current_user):
@@ -40,7 +40,7 @@ def get_sensors(current_company_api_key,current_company_id,current_user):
         return make_response('company_id not match with company_api_key',  500)
 
 # GET SENSOR BY ID
-@app.route('/v1/get_sensors/id/',methods=['GET'])
+@app.route('/api/v1/sensor/id/',methods=['GET'])
 @token_required
 @api_company_req
 def get_sensor(current_company_api_key,current_company_id,current_user):
@@ -71,7 +71,7 @@ def get_sensor(current_company_api_key,current_company_id,current_user):
         return make_response('company_id not match with company_api_key',  500)
 
 # REGISTER SENSOR
-@app.route('/v1/insert_sensor',methods=['POST'])
+@app.route('/api/v1/insert_sensor',methods=['POST'])
 @token_required
 def register_sensor(current_user):
     con = connection()
@@ -112,7 +112,7 @@ def register_sensor(current_user):
     return jsonify({"message":"Sensor created"})
 
 # UPDATE SENSOR
-@app.route('/v1/sensor',methods=['PUT'])
+@app.route('/v1/sensor_update/',methods=['PUT'])
 @token_required
 def update_sensor(current_user):
     id = request.args.get('id')
@@ -150,7 +150,7 @@ def update_sensor(current_user):
     return jsonify({"message":"Sensor updated"})
 
 # DELETE SENSOR
-@app.route('/v1/sensors',methods=['DELETE'])
+@app.route('/api/v1/sensor_delete',methods=['DELETE'])
 @token_required
 def delete_sensor(current_user):
     id = request.args.get('id')
