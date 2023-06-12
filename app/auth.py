@@ -54,53 +54,27 @@ def register_admin():
     con.commit()
     con.close()
 
-    # Generate the access token using the username as a string
-    # expire in 15 minutes
-    access_token = create_access_token(identity={"username":username}, expires_delta=datetime.timedelta(minutes=15))
+    return jsonify("Welcome ",username), 200 
 
-    return jsonify({"username": username, "access_token": access_token}), 200
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
-    if username != "test" or password != "test":
-        return jsonify({"msg": "Bad username or password"}), 401
-
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token)
-
-
-@app.route("/protected", methods=["GET"])
-@jwt_required()
-def protected():
-    # Access the identity of the current user with get_jwt_identity
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200    
-
-#LOGIN ADMIN
+#LOGIN USER
 @app.route('/login',methods=['POST'])
 def login():
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
     con = connection()
     c = con.cursor()
-    data = request.get_json()
-    username = data['username']
-    password = data['password']
     if not username:
-        return jsonify({"message":"Username is required"}),400
-    
+        return jsonify({"message": "Username is required"}), 400
     if not password:
-        return jsonify({"message":"Password is required"}),400
+        return jsonify({"message": "Password is required"}), 400
+    # validate if admin exists
+    if c.execute("SELECT * FROM Admin WHERE Username = ?", (username,)).fetchone() is None:
+        return jsonify({"message": "Admin does not exist"}), 400
+    # validate password
+    if not password == c.execute("SELECT * FROM Admin WHERE Username = ?", (username,)).fetchone()["Password"]:
+        return jsonify({"message": "Password is incorrect"}), 400
     
-    # validate if exist the admin
-    admin = c.execute("SELECT * FROM Admin WHERE Username = ?",(username,)).fetchone()
-    if admin is None:
-        return jsonify({"message":"Admin not exist"}),400
+    token = jwt.encode({'user': username}, "un_secreto", algorithm='HS256')  
+    return jsonify({'token' : token}) 
     
-    # if not check_password_hash(admin["Password"], password):
-    #     return jsonify({"message":"Password is incorrect"}),400
-    
-    if not admin["Password"] == password:
-        return jsonify({"message":"Password is incorrect"}),400
-    
-    access_token = create_access_token(identity={"username":username}, expires_delta=datetime.timedelta(minutes=15))
-    #print(app.secret_key)
-    con.close()
-    return jsonify({"token":access_token,"message":"Login successfull"})
+    return make_response('could not verify',  401, {'WWW.Authentication': 'Basic realm: "login required"'})

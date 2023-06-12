@@ -12,14 +12,31 @@ CORS(app)
 @token_required
 def insert_company(current_user):
     company_name = request.json['company_name']
-    company_api_key = request.json['company_api_key']
     # insert data in the company table
-    sql = "INSERT INTO Company (company_name, company_api_key) VALUES (?, ?)"
+    token = request.headers.get('x-access-tokens')
+    # hay que usar el token del usuario para api_key
+    company_api_key = token
+    
     conn = connection()
+    
+    # requerir company_name
+    if not company_name:
+        return jsonify({"message": "company_name is required"}), 400
+    
+    if conn.execute("SELECT * FROM Company WHERE company_name = ?", (company_name,)).fetchone() is not None:
+        return jsonify({"message": "Company already exists"}), 400
+    
+    if conn.execute("SELECT * FROM Company WHERE company_api_key = ?", (company_api_key,)).fetchone() is not None:
+        return jsonify({"message": "Company already exists"}), 400
+    
+    sql = "INSERT INTO Company (company_name, company_api_key) VALUES (?, ?)"
     conn.execute(sql, (company_name, company_api_key))
     conn.commit()
     conn.close()
-    return jsonify({"message": company_name})
+    return jsonify({
+        "company_name": company_name,
+        "company_api_key": company_api_key
+    })
 
 
 @app.route("/get_company", methods=["GET"])
