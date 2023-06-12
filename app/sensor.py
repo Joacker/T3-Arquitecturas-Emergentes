@@ -5,11 +5,12 @@ from functools import wraps
 from app import app
 from Connect import connection
 from flask_cors import CORS, cross_origin
+from uuid import uuid4
 # make route to insert in company table with protected route in token_required
 CORS(app)
 
 # GET SENSORS
-@app.route('/sensors',methods=['GET'])
+@app.route('/v1/get_sensors',methods=['GET'])
 @token_required
 @api_company_req
 def get_sensors(current_company_api_key,current_company_id,current_user):
@@ -39,8 +40,11 @@ def get_sensors(current_company_api_key,current_company_id,current_user):
         return make_response('company_id not match with company_api_key',  500)
 
 # GET SENSOR BY ID
-@app.route('/sensors/<int:id>',methods=['GET'])
-def get_sensor(id):
+@app.route('/v1/get_sensors',methods=['GET'])
+@token_required
+@api_company_req
+def get_sensor(current_company_api_key,current_company_id,current_user):
+    id = request.args.get(id)
     con = connection()
     c = con.cursor()
     c.execute("SELECT * FROM Sensor WHERE ID = ?",(id,))
@@ -67,7 +71,7 @@ def register_sensor(current_user):
     name = data['sensor_name']
     category = data['sensor_category']
     meta = data['sensor_meta']
-    apikey = data['sensor_api_key']
+    apikey = str(uuid4())
 
     if not locationid:
         return jsonify({"message":"Location ID is required"}),400
