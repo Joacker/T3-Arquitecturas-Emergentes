@@ -1,11 +1,12 @@
 from decorators import api_company_req, api_sensor_req, token_required
-import os, jwt, bcrypt, datetime, logging, json, time
+import os, jwt, bcrypt, logging, json, time
 from flask import Flask, Blueprint, request, jsonify, g, session, make_response
 from functools import wraps
 from app import app
 from Connect import connection
 from flask_cors import CORS, cross_origin
 from ast import literal_eval
+from datetime import datetime
 # make route to insert in company table with protected route in token_required
 CORS(app)
 
@@ -17,7 +18,10 @@ def send_data(current_sensor_api_key,current_sensor_id,current_user):
     json = request.json
     # extract sensor apikey from the header
     sensor_id  = json['sensor_id']
-    time_epoch = time.time() 
+    # Getting the current date and time
+    dt = datetime.now()
+    # getting the timestamp
+    time_epoch = datetime.timestamp(dt)
     humidity = json['humidity']
     temperature  = json['temperature']
     distance = json['distance']
@@ -37,7 +41,6 @@ def send_data(current_sensor_api_key,current_sensor_id,current_user):
             resp.status_code = 201  
             return resp
         except:
-
             resp = jsonify('Error in Insert Sensor')
             resp.status_code = 400  
             return resp
@@ -47,17 +50,13 @@ def send_data(current_sensor_api_key,current_sensor_id,current_user):
         return resp
 
 
-# GET SENSOR DATA FOR ID
-@app.route('/api/v1/sensor_data_delete/id/',methods=['DELETE'])
+# DELETE SENSOR DATA FOR ID
+@app.route('/v1/sensor_data_delete',methods=['DELETE'])
 @token_required
-# @api_company_req current_company_api_key,current_company_id,
 def delete_data(current_user):
-    json = request.json
-    sensor_id  = json['sensor_id']
-    from_date = json['from']
-    to_date = json['to']
+    id = request.args.get('id')
     try:
-        sql = f"DELETE FROM Sensor_data WHERE sensor_id={sensor_id} and measure_time BETWEEN {from_date} and {to_date}"
+        sql = f"DELETE FROM Sensor_data WHERE sensor_id={id}"
         conn = connection()
         conn.execute(sql)
         conn.commit()
@@ -66,9 +65,8 @@ def delete_data(current_user):
     except:
         return make_response('sensors not exist or id is invalid',500,)
 
-
 #GET SENSOR DATA
-@app.route('/api/v1/sensor_data',methods=['GET'])
+@app.route('/v1/sensor_data',methods=['GET'])
 @token_required
 @api_company_req
 def get_data(current_company_api_key,current_company_id,current_user,):
@@ -82,7 +80,7 @@ def get_data(current_company_api_key,current_company_id,current_user,):
         try:
             Sensors_data_collention = []
             for i in sensor_id_list:
-                sql = f"SELECT * FROM Sensor_data Where sensor_id={i} and measure_time BETWEEN {from_date} and {to_date}"
+                sql = f"SELECT * FROM Sensor_data Where sensor_id={i} and time BETWEEN {from_date} and {to_date}"
                 conn = connection()
                 rv = conn.execute(sql)
                 rows = rv.fetchall()
@@ -93,8 +91,12 @@ def get_data(current_company_api_key,current_company_id,current_user,):
                 for j in rows:
                     sensors_data = {}
                     sensors_data["sensor_id "] = j["sensor_id"]
-                    sensors_data["measure_time "] = datetime.fromtimestamp(j["measure_time"])
+                    sensors_data["time"] = datetime.fromtimestamp(j["time"])
+                    sensors_data["humidity"] = j["humidity"]
                     sensors_data["temperature "] = j["temperature"]
+                    sensors_data["distance"] = j["distance"]
+                    sensors_data["pressure"] = j["pressure"]
+                    sensors_data["light_level"] = j["light_level"]
                     Sensors_data_id.append(sensors_data)
                 Sensors_data_collention.append(Sensors_data_id)
                         
