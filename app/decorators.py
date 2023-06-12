@@ -1,7 +1,15 @@
+from crypt import methods
+from app import app
+from flask import jsonify, request,abort,make_response
+from datetime import datetime
+from uuid import uuid4
+import uuid, sqlite3, jwt 
 from functools import wraps
-from Connect import connection
-from flask import jsonify, request, abort, make_response
-import os, jwt, bcrypt, datetime, logging, json
+
+def connection():
+    conn = sqlite3.connect('./db/AEdb.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 # make decorator
 def token_required(f):
@@ -11,6 +19,8 @@ def token_required(f):
         current_user = {}
         if 'x-access-tokens' in request.headers:
             token = request.headers['x-access-tokens']
+            # get data from the body of the request
+            
         if not token:
             return jsonify({'message': 'a valid token is missing'})
         try:
@@ -25,7 +35,7 @@ def token_required(f):
                 current_user['username'] = i["Username"]
         except:
             return jsonify({'message': 'token is invalid'})
-        return f(current_user, *args, **kwargs)
+        return f(current_user,*args, **kwargs)
         
     return decorator
 
