@@ -71,21 +71,23 @@ def delete_data(current_user):
 @api_company_req
 def get_data(current_company_api_key,current_company_id,current_user,):
     sensor_id = request.args.get('sensor_id')
-    from_date = request.args.get('from')
-    to_date = request.args.get('to')
     company_id = request.args.get('company_id')
     sensor_id_list = literal_eval(sensor_id)
     #counter = list()
     if int(current_company_id) == int(company_id):
         try:
             Sensors_data_collention = []
+            logging.info("primer error")
+
             for i in sensor_id_list:
-                sql = f"SELECT * FROM Sensor_data Where sensor_id={i} and time BETWEEN {from_date} and {to_date}"
+                sql = "SELECT * FROM Sensor_data Where sensor_id="+i
                 conn = connection()
                 rv = conn.execute(sql)
                 rows = rv.fetchall()
                 conn.close()
-
+                logging.info("segundo error")
+                # how to check the status of the code python with logs
+                logging.info(rows)
                 Sensors_data_id = []
                 #counter.append(sql)
                 for j in rows:
@@ -105,8 +107,8 @@ def get_data(current_company_api_key,current_company_id,current_user,):
             resp.status_code = 201  
             return resp
         except:
-
-            resp = jsonify('Error to obtain info of the Sensor ')
+            logging.info("tercer error")
+            resp = jsonify('Error to obtain info of the Sensor')
             resp.status_code = 400  
             return resp
     else:
