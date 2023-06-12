@@ -1,4 +1,4 @@
-# VERSION of YAML
+# VERSION of YAML format
 version: '3'
 
 services:
