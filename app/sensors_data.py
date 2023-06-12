@@ -16,7 +16,7 @@ CORS(app)
 @api_sensor_req
 def send_data(current_sensor_api_key,current_sensor_id,current_user):
     json = request.json
-    # extract sensor apikey from the header
+    # extract sensor apikey from the headera
     sensor_id  = json['sensor_id']
     # Getting the current date and time
     dt = datetime.now()
