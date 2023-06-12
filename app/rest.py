@@ -7,7 +7,7 @@ from functools import wraps
 from Connect import connection
 from auth import *
 from __init__db__ import create_tables
-import company, location, sensor
+import company, location, sensor, sensors_data
 # from auth import token_required,api_company_req,api_sensor_req
 # import Locations
 # import Sensors

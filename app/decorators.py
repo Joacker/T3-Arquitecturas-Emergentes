@@ -79,14 +79,14 @@ def api_sensor_req(f):
         if not api_key:
             return jsonify({'message': 'a valid sensor_api_key is missing'})
         try:
-            sql = f"SELECT * FROM Sensor Where sensor_api_key='{api_key}'"
+            sql = f"SELECT * FROM Sensor Where SENSOR_API_KEY='{api_key}'"
             conn = connection()
             rv = conn.execute(sql)
             rows = rv.fetchall()
             conn.close()
             if rows:
                 for j in rows:
-                    current_sensor_id = j["sensor_id"] 
+                    current_sensor_id = j["ID"] 
                     current_sensor_api_key= j["sensor_api_key"] 
             else:
                 return jsonify({'message': 'sensor_api_key is invalid'})

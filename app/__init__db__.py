@@ -49,15 +49,15 @@ def create_tables():
 
         CREATE TABLE IF NOT EXISTS SENSOR_DATA(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            SENSOR_API_KEY TEXT,
+            SENSOR_ID INTEGER,
             TIME INTEGER,
             HUMIDITY REAL,
             TEMPERATURE REAL,
             DISTANCE REAL,
             PRESSURE REAL,
             LIGHT_LEVEL REAL,
-            FOREIGN KEY (SENSOR_API_KEY) 
-                REFERENCES SENSOR (SENSOR_API_KEY) 
+            FOREIGN KEY (SENSOR_ID) 
+                REFERENCES SENSOR (SENSOR_ID) 
                     ON DELETE CASCADE 
                     ON UPDATE NO ACTION
         )
