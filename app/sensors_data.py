@@ -72,6 +72,8 @@ def delete_data(current_user):
 def get_data(current_company_api_key,current_company_id,current_user,):
     sensor_id = request.args.get('sensor_id')
     company_id = request.args.get('company_id')
+    from_date = request.args.get('from')
+    to_date = request.args.get('to')
     sensor_id_list = literal_eval(sensor_id)
     #return jsonify(sensor_id_list, company_id, sensor_id)
     #counter = list()
@@ -79,7 +81,7 @@ def get_data(current_company_api_key,current_company_id,current_user,):
         try:
             Sensors_data_collention = [] 
             for i in sensor_id_list:
-                sql = f"SELECT * FROM Sensor_data Where sensor_id={i}"
+                sql = f"SELECT * FROM Sensor_data Where sensor_id={i} and time BETWEEN {from_date} AND {to_date}"
                 conn = connection()
                 rv = conn.execute(sql)
                 rows = rv.fetchall()
