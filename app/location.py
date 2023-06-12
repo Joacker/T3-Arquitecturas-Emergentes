@@ -9,27 +9,34 @@ from flask_cors import CORS, cross_origin
 CORS(app)
 
 # GET LOCATIONS
-@app.route('/get_locations',methods=['GET'])
-def get_locations():
-    try:
-        with connection() as con:
-            c = con.cursor()          
-            c.execute("SELECT * FROM Location")
-            rows = c.fetchall()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-    Locations = []
-    for i in rows:
-        get_Location = {}
-        get_Location["ID"] = i["ID"]
-        get_Location["company_id"] = i["company_id"]
-        get_Location["location_name"] = i["location_name"]
-        get_Location["location_country"] = i["location_country"]
-        get_Location["location_city"] = i["location_city"]
-        get_Location["location_meta"] = i["location_meta"]
-        Locations.append(get_Location)
-    return jsonify(Locations)
+@app.route('/v1/get_locations',methods=['GET'])
+@token_required
+@api_company_req
+def getM_locations(current_company_api_key,current_company_id,current_user):
+    company_id = request.args.get('company_id')
+    if int(current_company_id) == int(company_id):
+        try:
+            sql = "SELECT * FROM Location"
+            conn = connection()
+            rv = conn.execute(sql)
+            rows = rv.fetchall()
+            conn.close()
+            loactions = []
+            for i in rows:
+                    location = {}
+                    location["company_id "] = i["company_id"]
+                    location["location_name "] = i["location_name"]
+                    location["location_country "] = i["location_country"]
+                    location["location_city"] = i["location_city"]
+                    location["location_meta"] = i["location_meta"]
+                    loactions.append(location)
+            
+            return jsonify(loactions)
+            
+        except:
+            return make_response('Locations not exist',  500)
+    else:
+        return make_response('company_id not match with company_api_key',  500)
 
 
 # REGISTER LOCATION
