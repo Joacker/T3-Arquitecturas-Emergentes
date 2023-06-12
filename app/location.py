@@ -54,8 +54,8 @@ def getU_location(current_company_api_key,current_company_id,current_user):
             rows = rv.fetchall()
             conn.close()
             loactions = []
-            location = {}
             for i in rows:
+                    location = {}
                     location["company_id "] = i["company_id"]
                     location["location_name "] = i["location_name"]
                     location["location_country "] = i["location_country"]
